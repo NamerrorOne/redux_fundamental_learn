@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-type CounterState = {
+export type CounterState = {
   counter: number;
 };
 
 export type CounterId = string;
 
-type State = {
+export type State = {
   counters: Record<CounterId, CounterState | undefined>;
 };
 
@@ -27,6 +27,7 @@ export type DecrementAction = {
 type Action = IncrementAction | DecrementAction;
 
 const initialCounterState: CounterState = { counter: 0 };
+
 const initialState: State = {
   counters: {},
 };
@@ -71,3 +72,5 @@ const reducer = (state = initialState, action: Action): State => {
 export const store = configureStore({
   reducer: reducer,
 });
+
+export type AppState = ReturnType<typeof store.getState>;

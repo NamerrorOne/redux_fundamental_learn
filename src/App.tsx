@@ -3,11 +3,13 @@ import viteLogo from '/vite.svg';
 import './App.css';
 import {
   store,
+  type AppState,
   type CounterId,
+  type CounterState,
   type DecrementAction,
   type IncrementAction,
 } from './store';
-import { useEffect, useReducer } from 'react';
+import { useEffect, useReducer, useRef } from 'react';
 
 function App() {
   return (
@@ -36,16 +38,33 @@ function App() {
   );
 }
 
+const selectorCounter = (
+  state: AppState,
+  counterId: CounterId,
+): CounterState | undefined => {
+  return state.counters[counterId];
+};
+
 function Counter({ counterId }: { counterId: CounterId }) {
+  console.log(counterId + ' ' + JSON.stringify(store.getState()));
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  const lastStateRef = useRef<ReturnType<typeof selectorCounter>>();
 
   useEffect(() => {
     const unsub = store.subscribe(() => {
-      console.log('State changed:', store.getState());
-      forceUpdate();
+      const currentState = selectorCounter(store.getState(), counterId);
+      const lastState = lastStateRef.current;
+
+      if (currentState !== lastState) {
+        forceUpdate();
+      }
     });
     return unsub;
   }, []);
+
+  const counter = selectorCounter(store.getState(), counterId);
+
   return (
     <>
       <button
@@ -58,7 +77,7 @@ function Counter({ counterId }: { counterId: CounterId }) {
       >
         -
       </button>
-      {store.getState().counters[counterId]?.counter ?? 0}
+      {counter?.counter ?? 0}
       <button
         onClick={() =>
           store.dispatch({
